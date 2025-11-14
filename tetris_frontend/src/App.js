@@ -1,47 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import logo from './logo.svg';
+import './index.css';
 import './App.css';
+import Game from './components/Game';
 
 // PUBLIC_INTERFACE
 function App() {
+  /** Main application component hosting the Tetris Game with theme toggle. */
   const [theme, setTheme] = useState('light');
 
-  // Effect to apply theme to document element
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
   }, [theme]);
 
   // PUBLIC_INTERFACE
   const toggleTheme = () => {
-    setTheme(prevTheme => prevTheme === 'light' ? 'dark' : 'light');
+    /** Toggle between light and dark theme. */
+    setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
   return (
     <div className="App">
-      <header className="App-header">
-        <button 
-          className="theme-toggle" 
+      <header className="app-header container">
+        <div className="brand">
+          <span className="dot" aria-hidden="true" />
+          <span className="title">Modern Tetris</span>
+          <span className="badge" style={{ marginLeft: 8 }}>Ocean Professional</span>
+        </div>
+        <button
+          className="theme-toggle"
           onClick={toggleTheme}
           aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
         >
           {theme === 'light' ? '🌙 Dark' : '☀️ Light'}
         </button>
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <p>
-          Current theme: <strong>{theme}</strong>
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
       </header>
+
+      <main className="container">
+        <Game />
+      </main>
+
+      <footer className="app-footer container">
+        Built with React • Use arrow keys, Z/X or ↑ to rotate, Space to hard drop, P pause, R restart
+      </footer>
     </div>
   );
 }
