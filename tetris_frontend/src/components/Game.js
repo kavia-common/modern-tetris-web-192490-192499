@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import Board from './Board';
 import Sidebar from './Sidebar';
 import Controls from './Controls';
@@ -35,6 +35,16 @@ function Game() {
   } = useTetris();
 
   const rootRef = useRef(null);
+
+  // Detect compact mode from viewport height (<700px) and very narrow width
+  const [viewport, setViewport] = useState({ w: window.innerWidth, h: window.innerHeight });
+  useEffect(() => {
+    const onResize = () => setViewport({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  const compact = useMemo(() => viewport.h < 700 || viewport.w < 420, [viewport.h, viewport.w]);
+  const narrow = useMemo(() => viewport.w <= 900, [viewport.w]); // for stacking and sidebar behavior
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -106,9 +116,9 @@ function Game() {
   ]);
 
   return (
-    <div className="game-shell">
-      <div className="board-wrap">
-        <div className="board-frame card" ref={rootRef} aria-label="Tetris board container">
+    <div className={`game-shell ${compact ? 'game-compact' : ''}`}>
+      <div className={`board-wrap ${compact ? 'board-wrap-compact' : ''}`}>
+        <div className={`board-frame card ${compact ? 'board-frame-compact' : ''}`} ref={rootRef} aria-label="Tetris board container">
           <Board board={board} drawMatrix={drawMatrix} ghostMatrix={ghostMatrix} />
           {(paused || gameOver || !isRunning) && (
             <div className="overlay" role="dialog" aria-live="polite">
@@ -122,27 +132,54 @@ function Game() {
               </div>
             </div>
           )}
+
+          {/* Bottom docked controls for compact mode - fixed within board frame */}
+          {compact && (
+            <div className="controls-bottom-dock" role="region" aria-label="Docked Controls">
+              <Controls
+                compact
+                docked
+                isRunning={isRunning}
+                paused={paused}
+                gameOver={gameOver}
+                onStart={startGame}
+                onPause={pauseGame}
+                onResume={resumeGame}
+                onRestart={resetGame}
+                onLeft={moveLeft}
+                onRight={moveRight}
+                onDown={softDrop}
+                onDrop={hardDrop}
+                onRotateCW={rotateCW}
+                onRotateCCW={rotateCCW}
+              />
+            </div>
+          )}
         </div>
-        <div style={{ marginTop: 16 }}>
-          <Controls
-            isRunning={isRunning}
-            paused={paused}
-            gameOver={gameOver}
-            onStart={startGame}
-            onPause={pauseGame}
-            onResume={resumeGame}
-            onRestart={resetGame}
-            onLeft={moveLeft}
-            onRight={moveRight}
-            onDown={softDrop}
-            onDrop={hardDrop}
-            onRotateCW={rotateCW}
-            onRotateCCW={rotateCCW}
-          />
-        </div>
+
+        {/* Standard controls under board only when not compact */}
+        {!compact && (
+          <div style={{ marginTop: 12 }}>
+            <Controls
+              isRunning={isRunning}
+              paused={paused}
+              gameOver={gameOver}
+              onStart={startGame}
+              onPause={pauseGame}
+              onResume={resumeGame}
+              onRestart={resetGame}
+              onLeft={moveLeft}
+              onRight={moveRight}
+              onDown={softDrop}
+              onDrop={hardDrop}
+              onRotateCW={rotateCW}
+              onRotateCCW={rotateCCW}
+            />
+          </div>
+        )}
       </div>
 
-      <aside className="sidebar">
+      <aside className={`sidebar ${compact ? 'sidebar-compact' : ''} ${narrow ? 'sidebar-collapsible' : ''}`}>
         <Sidebar
           score={score}
           level={level}

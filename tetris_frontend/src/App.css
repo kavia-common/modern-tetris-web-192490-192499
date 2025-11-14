@@ -5,7 +5,7 @@
 }
 
 .app-header {
-  padding: 16px 24px;
+  padding: 12px 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -32,7 +32,7 @@
   color: var(--text);
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 8px 14px;
+  padding: 6px 12px;
   cursor: pointer;
   box-shadow: var(--shadow-sm);
   transition: transform var(--transition), box-shadow var(--transition), background var(--transition);
@@ -43,8 +43,12 @@
 .game-shell {
   display: grid;
   grid-template-columns: 1fr 320px;
-  gap: 24px;
+  gap: 20px;
   align-items: start;
+}
+
+.game-shell.game-compact {
+  gap: 12px;
 }
 
 @media (max-width: 900px) {
@@ -53,19 +57,25 @@
   }
 }
 
-/* Board wrapper to maintain aspect ratio (10x20 cells -> 1:2) */
+/* Board wrapper: width constrained, scales height via aspect-ratio; compact reduces max width */
 .board-wrap {
   width: 100%;
   max-width: 520px;
   margin: 0 auto;
 }
+.board-wrap-compact {
+  max-width: 460px;
+}
 .board-frame {
   position: relative;
-  padding: 14px;
+  padding: 12px;
   background: linear-gradient(180deg, rgba(37,99,235,0.08), rgba(37,99,235,0.02));
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
+}
+.board-frame-compact {
+  padding: 8px;
 }
 
 /* Grid styles for cells */
@@ -77,9 +87,33 @@
   border: 1px solid var(--border);
   border-radius: 8px;
   overflow: hidden;
-  aspect-ratio: 10 / 20;
+  aspect-ratio: 10 / 20; /* keeps board height bound to width */
+  /* prevent board from exceeding viewport height minus header/footer paddings when compact */
+  max-height: calc(100vh - 220px);
+}
+.game-shell.game-compact .board {
+  gap: 0.5px; /* tighter spacing in compact */
 }
 
+/* bottom dock for controls inside the board frame when compact */
+.controls-bottom-dock {
+  position: absolute;
+  left: 8px;
+  right: 8px;
+  bottom: 8px;
+  z-index: 11;
+  pointer-events: none; /* allow buttons to still clickable within */
+}
+.controls-bottom-dock .panel {
+  pointer-events: auto;
+  margin: 0;
+  padding: 8px;
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  backdrop-filter: blur(6px);
+  border-radius: 10px;
+}
+
+/* Cells */
 .cell {
   background: #f3f4f6;
   position: relative;
@@ -107,23 +141,29 @@
   100% { opacity: 1; }
 }
 
-/* Sidebar panel */
+/* Sidebar panel - sticky on larger screens, collapsible/condensed on small/short */
 .sidebar {
   position: sticky;
-  top: 16px;
+  top: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
+  align-self: start;
+}
+.sidebar-compact .panel { padding: 12px; }
+.sidebar-collapsible {
+  position: static; /* on narrow screens stack normally, avoid sticky cut-off */
 }
 
+/* Panels and stats */
 .panel {
-  padding: 16px;
+  padding: 14px;
 }
 .panel .panel-title {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   font-weight: 700;
   font-size: 14px;
   color: var(--muted);
@@ -132,21 +172,21 @@
 .stat-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 10px;
 }
 .stat {
   text-align: center;
   background: linear-gradient(180deg, rgba(17,24,39,0.02), transparent);
   border: 1px dashed var(--border);
   border-radius: 10px;
-  padding: 10px;
+  padding: 8px;
 }
 .stat .label {
   font-size: 12px;
   color: var(--muted);
 }
 .stat .value {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
   color: var(--text);
 }
@@ -175,18 +215,32 @@
 .controls {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: 8px;
 }
 .controls .btn {
   padding: 10px 8px;
 }
+.controls-grid-compact {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+.controls-compact .panel-title { margin-bottom: 6px; }
+.btn.btn-xs {
+  padding: 6px 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  line-height: 1.1;
+  box-shadow: var(--shadow-sm);
+}
+
+/* key legend hidden in compact via component; base size tweaks */
 .key-legend {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  gap: 6px;
 }
 .key {
-  font-size: 12px;
+  font-size: 11px;
   padding: 6px 8px;
   border: 1px dashed var(--border);
   border-radius: 8px;
@@ -209,20 +263,28 @@
   text-align: center;
 }
 .overlay .title {
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 800;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .overlay .subtitle {
   opacity: 0.9;
+  font-size: 13px;
 }
 
 /* Footer */
 .app-footer {
-  margin: 32px auto 24px;
+  margin: 20px auto 18px;
   text-align: center;
   color: var(--muted);
   font-size: 12px;
   max-width: 1200px;
-  padding: 0 24px;
+  padding: 0 20px;
+}
+
+/* Mobile stacking safeguards */
+@media (max-width: 480px) {
+  .controls { grid-template-columns: repeat(3, 1fr); }
+  .controls-grid-compact { grid-template-columns: repeat(6, 1fr); }
+  .board-wrap { max-width: 100%; }
 }
