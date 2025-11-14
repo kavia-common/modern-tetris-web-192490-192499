@@ -24,7 +24,9 @@ function App() {
         <div className="brand">
           <span className="dot" aria-hidden="true" />
           <span className="title">Modern Tetris</span>
-          <span className="badge" style={{ marginLeft: 8 }}>Ocean Professional</span>
+          <span className="badge" style={{ marginLeft: 8, background: 'rgba(37,99,235,0.12)', borderColor: 'rgba(37,99,235,0.25)' }}>
+            Ocean Professional
+          </span>
         </div>
         <button
           className="theme-toggle"
@@ -36,6 +38,7 @@ function App() {
       </header>
 
       <main className="container">
+        {/* Render the full Game experience (board, sidebar, controls). */}
         <Game />
       </main>
 

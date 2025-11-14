@@ -219,8 +219,10 @@
 
 /* Footer */
 .app-footer {
-  margin-top: 24px;
+  margin: 32px auto 24px;
   text-align: center;
   color: var(--muted);
   font-size: 12px;
+  max-width: 1200px;
+  padding: 0 24px;
 }
