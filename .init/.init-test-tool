@@ -1,0 +1,4 @@
+{
+    "command": "npm run test",
+    "working_directory": "/home/kavia/workspace/code-generation/modern-tetris-web-192490-192499/tetris_frontend"
+}
