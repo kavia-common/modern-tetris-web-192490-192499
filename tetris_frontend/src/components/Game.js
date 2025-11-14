@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import Board from './Board';
 import Sidebar from './Sidebar';
 import Controls from './Controls';
@@ -45,6 +45,19 @@ function Game() {
   }, []);
   const compact = useMemo(() => viewport.h < 700 || viewport.w < 420, [viewport.h, viewport.w]);
   const narrow = useMemo(() => viewport.w <= 900, [viewport.w]); // for stacking and sidebar behavior
+
+  // Dock visibility state: when hidden, we show inline compact controls in sidebar
+  const [dockHidden, setDockHidden] = useState(false);
+
+  // Reserve height for dock when compact and not hidden
+  const DOCK_HEIGHT = 88; // default dock height used in CSS; keep in sync
+  const dockActive = compact && !dockHidden;
+
+  // PUBLIC_INTERFACE
+  const toggleDock = useCallback(() => {
+    /** Toggle the bottom dock visibility. When hidden, show inline controls in the sidebar. */
+    setDockHidden(v => !v);
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -115,10 +128,22 @@ function Game() {
     rotateCCW,
   ]);
 
+  const boardFrameStyle = dockActive
+    ? {
+        // Reserve space beneath the board area equivalent to dock height + safe area
+        paddingBottom: `calc(var(--controls-dock-height, ${DOCK_HEIGHT}px) + env(safe-area-inset-bottom, 0px))`,
+      }
+    : undefined;
+
   return (
     <div className={`game-shell ${compact ? 'game-compact' : ''}`}>
       <div className={`board-wrap ${compact ? 'board-wrap-compact' : ''}`}>
-        <div className={`board-frame card ${compact ? 'board-frame-compact' : ''}`} ref={rootRef} aria-label="Tetris board container">
+        <div
+          className={`board-frame card ${compact ? 'board-frame-compact' : ''}`}
+          ref={rootRef}
+          aria-label="Tetris board container"
+          style={boardFrameStyle}
+        >
           <Board board={board} drawMatrix={drawMatrix} ghostMatrix={ghostMatrix} />
           {(paused || gameOver || !isRunning) && (
             <div className="overlay" role="dialog" aria-live="polite">
@@ -133,8 +158,8 @@ function Game() {
             </div>
           )}
 
-          {/* Bottom docked controls for compact mode - fixed within board frame */}
-          {compact && (
+          {/* Bottom docked controls for compact mode - positioned near the bottom of board frame */}
+          {dockActive && (
             <div className="controls-bottom-dock" role="region" aria-label="Docked Controls">
               <Controls
                 compact
@@ -157,7 +182,7 @@ function Game() {
           )}
         </div>
 
-        {/* Standard controls under board only when not compact */}
+        {/* Standard controls under board only when not compact (non-compact mode; dock should not overlay) */}
         {!compact && (
           <div style={{ marginTop: 12 }}>
             <Controls
@@ -187,6 +212,42 @@ function Game() {
           nextPiece={nextPiece}
           isRunning={isRunning}
         />
+
+        {/* Dock visibility toggle and inline controls when dock is hidden */}
+        {compact && (
+          <div className="panel card" style={{ marginTop: 12 }}>
+            <div className="panel-title">
+              <span>Controls</span>
+              <button
+                className="btn ghost btn-xs"
+                onClick={toggleDock}
+                aria-pressed={!dockHidden ? 'true' : 'false'}
+                aria-label={dockHidden ? 'Show bottom dock' : 'Hide bottom dock'}
+              >
+                {dockHidden ? 'Show Dock' : 'Hide Dock'}
+              </button>
+            </div>
+
+            {dockHidden && (
+              <Controls
+                compact
+                isRunning={isRunning}
+                paused={paused}
+                gameOver={gameOver}
+                onStart={startGame}
+                onPause={pauseGame}
+                onResume={resumeGame}
+                onRestart={resetGame}
+                onLeft={moveLeft}
+                onRight={moveRight}
+                onDown={softDrop}
+                onDrop={hardDrop}
+                onRotateCW={rotateCW}
+                onRotateCCW={rotateCCW}
+              />
+            )}
+          </div>
+        )}
       </aside>
     </div>
   );

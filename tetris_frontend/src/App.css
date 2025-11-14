@@ -1,5 +1,12 @@
 /* App layout and Tetris styles (Ocean Professional) */
 
+:root {
+  /* PUBLIC_INTERFACE
+     Reserve a CSS var for the bottom dock height so JS can override if needed.
+  */
+  --controls-dock-height: 88px;
+}
+
 .App {
   min-height: 100vh;
 }
@@ -73,6 +80,7 @@
   border: 1px solid var(--border);
   border-radius: var(--radius);
   box-shadow: var(--shadow-md);
+  /* Ensure inner absolute dock has room via inline style padding-bottom from Game.jsx */
 }
 .board-frame-compact {
   padding: 8px;
@@ -88,11 +96,15 @@
   border-radius: 8px;
   overflow: hidden;
   aspect-ratio: 10 / 20; /* keeps board height bound to width */
-  /* prevent board from exceeding viewport height minus header/footer paddings when compact */
+  /* prevent board from exceeding viewport height minus header/footer or dock paddings */
   max-height: calc(100vh - 220px);
 }
+
+/* When compact mode is active, further constrain the board height taking dock + safe area into account.
+   Header + margins roughly ~120px, leave breathing space. */
 .game-shell.game-compact .board {
   gap: 0.5px; /* tighter spacing in compact */
+  max-height: calc(100vh - 140px - var(--controls-dock-height) - env(safe-area-inset-bottom, 0px));
 }
 
 /* bottom dock for controls inside the board frame when compact */
@@ -100,7 +112,8 @@
   position: absolute;
   left: 8px;
   right: 8px;
-  bottom: 8px;
+  /* Pull dock above bottom safe area and within frame padding */
+  bottom: calc(8px + env(safe-area-inset-bottom, 0px));
   z-index: 11;
   pointer-events: none; /* allow buttons to still clickable within */
 }
@@ -112,6 +125,8 @@
   backdrop-filter: blur(6px);
   border-radius: 10px;
 }
+
+/* Ensure non-compact controls are not fixed/overlaying the board; they appear in normal flow below the board. */
 
 /* Cells */
 .cell {

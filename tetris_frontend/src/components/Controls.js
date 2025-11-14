@@ -41,6 +41,10 @@ function Controls({
         </div>
       )}
 
+      {docked && (
+        <div className="sr-only" aria-live="polite">Docked controls</div>
+      )}
+
       <div className={`controls ${compact ? 'controls-grid-compact' : ''}`} style={{ marginBottom: compact ? 6 : 12 }}>
         {!isRunning && !gameOver && (
           <button className={`btn ${compact ? 'btn-xs' : ''}`} onClick={onStart} aria-label="Start Game">
